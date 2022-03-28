@@ -1,69 +1,61 @@
-import React, {useState, useEffect} from 'react';
-import GetLocation from 'react-native-get-location';
-import axios from 'axios';
+import React, {useEffect} from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import Home from './Screens/Home';
+import Details from './Screens/Details';
+import Login from './Screens/Login';
+import {store} from './store';
+import {Provider} from 'react-redux';
+import {useSelector, useDispatch} from 'react-redux';
 
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import {StyleSheet} from 'react-native';
+
+const Stack = createNativeStackNavigator();
 
 const BASE_URL = 'https://www.mapquestapi.com/geocoding/v1/reverse?key=';
 const API_KEY = 'MkBymDR3RGCyXQ9sVyHnbaUFzLhMJAz2';
 
+const AppStack = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Home"
+        component={Home}
+        options={{title: 'Clinician List'}}
+      />
+      <Stack.Screen
+        name="Details"
+        component={Details}
+        options={{title: 'Clinician Details'}}
+      />
+    </Stack.Navigator>
+  );
+};
+
+const AuthStack = () => {
+  return (
+    <Provider store={store}>
+      <Stack.Navigator>
+        <Stack.Screen name="Login" component={Login} />
+      </Stack.Navigator>
+    </Provider>
+  );
+};
+
 const App = () => {
-  const [location, setLocation] = useState(null);
-  const [clinicianState, setClinicianState] = useState(null);
+  const location = useSelector(state => state.location.location);
+  const authToken = useSelector(state => state.auth.authToken);
 
-  const sendGetRequest = async () => {
-    try {
-      const resp = await axios.get(
-        `${BASE_URL}${API_KEY}&location=${location.latitude},${location.longitude}`,
-      );
-      setClinicianState(resp.data.results[0].locations[0].adminArea3);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const getLocation = () => {
-    GetLocation?.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 15000,
-    })
-      .then(location => {
-        setLocation(location);
-      })
-      .catch(error => {
-        const {code, message} = error;
-        console.warn(code, message);
-      });
-  };
+  useEffect(() => {
+    console.log('location is ', location);
+  }, [location]);
 
   return (
-    <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-      <Text>Device Location: </Text>
-      {location && <Text>{`${location.latitude}, ${location.latitude}`}</Text>}
-      <Text>State: </Text>
-      {location && <Text>{`${clinicianState}`}</Text>}
-
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={getLocation}
-        style={styles.button}>
-        <Text style={styles.buttonText}>Show Lat, Long</Text>
-      </TouchableOpacity>
-      <TouchableOpacity
-        activeOpacity={0.9}
-        onPress={sendGetRequest}
-        style={styles.button}>
-        <Text style={styles.buttonText}>Show Lat, Long</Text>
-      </TouchableOpacity>
-    </View>
+    <NavigationContainer>
+      {authToken ? <AppStack /> : <AuthStack />}
+      {/* <AppStack /> */}
+      {/* <AuthStack /> */}
+    </NavigationContainer>
   );
 };
 
