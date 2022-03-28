@@ -17,9 +17,11 @@ import axios from 'axios';
 import ClinicianCard from '../Components/ClinicianCard';
 import UserDetail from '../Components/UserDetail';
 import {useSelector, useDispatch} from 'react-redux';
-//import {getState} from '../utils/getState';
 
 import clinicians from '../clinicians.json';
+const alphabetizedClinicians = clinicians.sort((a, b) =>
+  a.firstName > b.firstName ? 1 : -1,
+);
 
 const BASE_URL = 'https://www.mapquestapi.com/geocoding/v1/reverse?key=';
 const API_KEY = 'MkBymDR3RGCyXQ9sVyHnbaUFzLhMJAz2';
@@ -38,93 +40,63 @@ const Home = ({navigation}) => {
   //console.log('location in Home!!!!!!!!! ', location);
   //const dispatch = useDispatch();
 
+  function mapAsync(array, callbackfn) {
+    return Promise.all(array.map(callbackfn));
+  }
+
+  function filterAsync(array, callbackfn) {
+    return mapAsync(array, callbackfn).then(filterMap => {
+      return array.filter((value, index) => filterMap[index]);
+    });
+  }
+
   useEffect(() => {
-    console.log('useEffect in Home!!!!!!!!!', location);
     sendGetRequest();
+    filterCliniciansByState();
   }, [location]);
 
-  const alphabetizedClinicians = clinicians.sort((a, b) =>
-    a.firstName > b.firstName ? 1 : -1,
-  );
+  const filterCliniciansByState = async () => {
+    const filteredClinicians = [];
+    const newClinicians = await Promise.all(
+      alphabetizedClinicians.map(item => {
+        return getState(item);
+      }),
+    );
 
-  // const sendGetRequest = () => {
-  //   console.log('kjbasdflkjbasfv');
-  // };
+    const finalClinicians = alphabetizedClinicians.filter((c, i) => {
+      return newClinicians[i] === true;
+    });
+    setStateClinicians(finalClinicians);
+
+    console.log('filteredClinicians are ', finalClinicians);
+  };
 
   const sendGetRequest = async () => {
-    console.log('sendGetREquest!!!! ', location);
-    console.log(
-      `${BASE_URL}${API_KEY}&location=${location.latitude},${location.longitude}`,
-    );
     try {
       const resp = await axios.get(
         `${BASE_URL}${API_KEY}&location=${location.latitude},${location.longitude}`,
       );
+
       setDeviceState(resp.data.results[0].locations[0].adminArea3);
     } catch (err) {
       console.error(err);
     }
   };
 
-  // const getLocation = () => {
-  //   GetLocation?.getCurrentPosition({
-  //     enableHighAccuracy: true,
-  //     timeout: 15000,
-  //   })
-  //     .then(location => {
-  //       console.log('location ', location);
-  //       setDeviceLocation(location);
-  //       //sendGetRequest();
-  //     })
-  //     .catch(error => {
-  //       const {code, message} = error;
-  //       console.warn(code, message);
-  //     });
-  // };
+  const getState = async item => {
+    console.log('item in getStae is ', item);
 
-  //const main = () => {
-  //console.log('main caled!!!!!!!!!!!!!');
-  //Geolocation.getCurrentPosition(info => console.log(info));
-  //getPosition().then(data => {
-  //console.log('data is ', data);
-  // setDeviceStateLocation(data.coords.latitude, data.coords.longitude).catch(
-  //   err => console.log('setDeviceStateLocation error!!! ', err),
-  //);
-  // });
-  //};
-
-  // async function setDeviceStateLocation(latitude, longitude) {
-  //   setLoading(true);
-  //   try {
-  //     let response = await fetch(
-  //       `${BASE_URL}${API_KEY}&format=json&lat=${latitude}&lon=${longitude}`,
-  //       {
-  //         headers: {
-  //           Accept: 'application/json',
-  //           'Content-Type': 'application/json',
-  //         },
-  //       },
-  //     );
-  //     try {
-  //       let json = await response.json();
-  //       setState(json.address.state);
-  //     } catch (err) {
-  //       console.log('response.json err', err);
-  //     }
-  //   } catch (err) {
-  //     console.log('fetch error!!! ', err);
-  //   }
-  //   setLoading(false);
-  // }
-
-  // useEffect(() => {
-  //   getLocation();
-  //   if (deviceLocation) {
-  //     sendGetRequest();
-  //   }
-  //   //main();
-  //   //filterCliniciansByState();
-  // }, []);
+    const latitude = item.location.split(',')[0].replace(/[^\d.-]/g, '');
+    const longitude = item.location.split(',')[1].replace(/[^\d.-]/g, '');
+    try {
+      const resp = await axios.get(
+        `${BASE_URL}${API_KEY}&location=${latitude},${longitude}`,
+      );
+      return resp.data.results[0].locations[0].adminArea3 === 'NY';
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const logout = () => {
     signOut();
@@ -165,6 +137,8 @@ const Home = ({navigation}) => {
     return <ClinicianCard item={item} />;
   };
 
+  console.log('stateClinicians ', stateClinicians);
+
   return (
     <SafeAreaView style={{flex: 1}}>
       <Text>Device Location:</Text>
@@ -183,7 +157,7 @@ const Home = ({navigation}) => {
         {/* {favorite && <Text style={styles.title}>Clinicians</Text>} */}
 
         <FlatList
-          data={alphabetizedClinicians}
+          data={stateClinicians}
           keyExtractor={(item, index) => item + index.toString()}
           enableEmptySections={true}
           renderItem={renderItem}
