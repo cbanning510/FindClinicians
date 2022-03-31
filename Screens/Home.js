@@ -35,7 +35,7 @@ const Home = ({navigation}) => {
   //const {signOut, latitude, longitude} = useContext(AuthContext);
   const [loading, setLoading] = useState(true);
   const [stateClinicians, setStateClinicians] = useState(null);
-  // const favorite = useSelector(state => state.favorite.favorite);
+  const favorite = useSelector(state => state.favorite.favorite);
   const location = useSelector(state => state.location.location);
   //console.log('location in Home!!!!!!!!! ', location);
   //const dispatch = useDispatch();
@@ -56,7 +56,6 @@ const Home = ({navigation}) => {
   }, [location]);
 
   const filterCliniciansByState = async () => {
-    const filteredClinicians = [];
     const newClinicians = await Promise.all(
       alphabetizedClinicians.map(item => {
         return getState(item);
@@ -84,8 +83,6 @@ const Home = ({navigation}) => {
   };
 
   const getState = async item => {
-    console.log('item in getStae is ', item);
-
     const latitude = item.location.split(',')[0].replace(/[^\d.-]/g, '');
     const longitude = item.location.split(',')[1].replace(/[^\d.-]/g, '');
     try {
@@ -102,36 +99,36 @@ const Home = ({navigation}) => {
     signOut();
   };
 
-  // const renderFavorite = () => {
-  //   const favItem = clinicians.find(c => c.id === favorite);
-  //   return (
-  //     <>
-  //       <View style={styles.favoriteContainer}>
-  //         <View
-  //           style={{
-  //             flexDirection: 'row',
-  //             justifyContent: 'center',
-  //             alignItems: 'center',
-  //           }}>
-  //           <Image
-  //             style={{
-  //               width: 24,
-  //               height: 24,
-  //             }}
-  //             source={require('../assets/closedHeart-100.png')}
-  //             resizeMode={'cover'}
-  //           />
-  //           <Text style={styles.favorite}>Favorite Clinician:</Text>
-  //         </View>
-  //         <View>
-  //           <UserDetail title="name" text={`${favItem.fullName}`} />
-  //           <UserDetail title="email" text={`${favItem.email}`} />
-  //           <UserDetail title="phone" text={`${favItem.phone}`} />
-  //         </View>
-  //       </View>
-  //     </>
-  //   );
-  // };
+  const renderFavorite = () => {
+    const favItem = clinicians.find(c => c.id === favorite);
+    return (
+      <>
+        <View style={styles.favoriteContainer}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}>
+            <Image
+              style={{
+                width: 24,
+                height: 24,
+              }}
+              source={require('../assets/closedHeart-100.png')}
+              resizeMode={'cover'}
+            />
+            <Text style={styles.favorite}>Favorite Clinician:</Text>
+          </View>
+          <View>
+            <UserDetail title="name" text={`${favItem.fullName}`} />
+            <UserDetail title="email" text={`${favItem.email}`} />
+            <UserDetail title="phone" text={`${favItem.phone}`} />
+          </View>
+        </View>
+      </>
+    );
+  };
 
   const renderItem = ({item}) => {
     return <ClinicianCard item={item} />;
@@ -151,10 +148,9 @@ const Home = ({navigation}) => {
       )}
 
       <View style={styles.container}>
-        {/* {!favorite && <Text style={styles.title}>Clinicians</Text>} */}
-        <Text style={styles.title}>Clinicians</Text>
-        {/* {favorite && renderFavorite()} */}
-        {/* {favorite && <Text style={styles.title}>Clinicians</Text>} */}
+        {!favorite && <Text style={styles.title}>Clinicians</Text>}
+        {favorite && renderFavorite()}
+        {favorite && <Text style={styles.title}>Clinicians</Text>}
 
         <FlatList
           data={stateClinicians}

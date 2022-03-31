@@ -13,16 +13,16 @@ import UserDetail from '../Components/UserDetail';
 //import {AuthContext} from '../components/context';
 //import {getState} from '../utils/getState';
 
-//import {useSelector, useDispatch} from 'react-redux';
-//import {setFavorite} from './favoriteSlice';
+import {useSelector, useDispatch} from 'react-redux';
+import {setFavorite} from './favoriteSlice';
 
 const BASE_URL = 'https://open.mapquestapi.com/nominatim/v1/reverse.php?key=';
 const API_KEY = 'MkBymDR3RGCyXQ9sVyHnbaUFzLhMJAz2';
 
 const Details = ({route, navigation}) => {
   const [address, setAddress] = useState(null);
-  //const favorite = useSelector(state => state.favorite.favorite);
-  //const dispatch = useDispatch();
+  const favorite = useSelector(state => state.favorite.favorite);
+  const dispatch = useDispatch();
 
   // useEffect(() => {
   //   getAddress();
@@ -34,7 +34,7 @@ const Details = ({route, navigation}) => {
 
   const updatedimageUrl = imageUrl.replace(/^http:\/\//i, 'https://');
 
-  //const isFavorite = favorite === id;
+  const isFavorite = favorite === id;
 
   const getAddress = async () => {
     const latitude = location.split(',')[0].replace(/[^\d.-]/g, '');
