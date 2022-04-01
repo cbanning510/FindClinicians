@@ -1,5 +1,10 @@
 # FindClinicians
 
+creds: 
+
+email: test@gmail.com
+password: password
+
 run on ios:
 
 npm install
