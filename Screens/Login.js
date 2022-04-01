@@ -49,7 +49,7 @@ const Login = () => {
   return (
     <SafeAreaView style={styles.container}>
       <KeyboardAwareScrollView>
-        <Text style={styles.title}>MyClinicians</Text>
+        <Text style={styles.title}>FindClinicians</Text>
         <View style={{marginTop: 100}}>
           <Text style={styles.label}>Email:</Text>
           <TextInput
