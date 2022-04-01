@@ -1,6 +1,5 @@
 # FindClinicians
-
-- Installation Instructions:
+Installation Instructions:
 
 creds: 
 
