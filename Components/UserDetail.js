@@ -1,6 +1,6 @@
 import React from 'react';
 
-import {View, Text, TouchableOpacity, StyleSheet} from 'react-native';
+import {View, Text, StyleSheet} from 'react-native';
 
 const UserDetail = ({title = '', text}) => {
   return (

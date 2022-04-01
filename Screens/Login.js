@@ -1,5 +1,4 @@
-//import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useEffect, useContext, useState} from 'react';
+import React, {useEffect, useContext} from 'react';
 import GetLocation from 'react-native-get-location';
 
 import {
@@ -11,19 +10,18 @@ import {
   View,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {useSelector, useDispatch} from 'react-redux';
+import {useDispatch} from 'react-redux';
 import {setLocation} from './locationSlice';
 import {setAuthToken} from './authSlice';
 
-//import {AuthContext} from '../components/context';
+import {AuthContext} from '../Components/context';
 
 const Login = () => {
   const [email, onChangeText] = React.useState(null);
   const [password, onChangeNumber] = React.useState(null);
   const dispatch = useDispatch();
-  const location = useSelector(state => state);
 
-  //const {signIn} = useContext(AuthContext);
+  const {signIn} = useContext(AuthContext);
 
   const getLocation = () => {
     GetLocation?.getCurrentPosition({
@@ -31,7 +29,6 @@ const Login = () => {
       timeout: 15000,
     })
       .then(location => {
-        console.log('location ', location);
         dispatch(setLocation(location));
       })
       .catch(error => {
@@ -42,7 +39,7 @@ const Login = () => {
 
   const handleLogin = () => {
     dispatch(setAuthToken('drg'));
-    //signIn(email, password);
+    signIn(email, password);
   };
 
   useEffect(() => {
@@ -50,19 +47,11 @@ const Login = () => {
   }, []);
 
   return (
-    <SafeAreaView
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: 'dodgerblue',
-      }}>
+    <SafeAreaView style={styles.container}>
       <KeyboardAwareScrollView>
-        <Text style={{alignSelf: 'center', fontSize: 26, marginTop: 60}}>
-          MyClinicians
-        </Text>
+        <Text style={styles.title}>MyClinicians</Text>
         <View style={{marginTop: 100}}>
-          <Text style={{paddingLeft: 12}}>Email:</Text>
+          <Text style={styles.label}>Email:</Text>
           <TextInput
             style={styles.input}
             onChangeText={onChangeText}
@@ -70,7 +59,7 @@ const Login = () => {
             value={email}
             autoCapitalize="none"
           />
-          <Text style={{paddingLeft: 12}}>Password:</Text>
+          <Text style={styles.label}>Password:</Text>
           <TextInput
             style={styles.input}
             onChangeText={onChangeNumber}
@@ -79,20 +68,8 @@ const Login = () => {
             secureTextEntry
           />
         </View>
-        <TouchableOpacity
-          onPress={handleLogin}
-          style={{
-            borderWidth: 1,
-            alignSelf: 'center',
-            borderColor: 'black',
-            padding: 6,
-            paddingHorizontal: 10,
-            marginTop: 16,
-            borderRadius: 4,
-            backgroundColor: 'white',
-            width: 80,
-          }}>
-          <Text style={{alignSelf: 'center'}}>Login</Text>
+        <TouchableOpacity onPress={handleLogin} style={styles.button}>
+          <Text style={styles.buttonText}>Login</Text>
         </TouchableOpacity>
       </KeyboardAwareScrollView>
     </SafeAreaView>
@@ -102,6 +79,13 @@ const Login = () => {
 export default Login;
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'dodgerblue',
+  },
+  title: {alignSelf: 'center', fontSize: 26, marginTop: 60},
   input: {
     height: 40,
     width: 220,
@@ -112,4 +96,17 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: 'white',
   },
+  button: {
+    borderWidth: 1,
+    alignSelf: 'center',
+    borderColor: 'black',
+    padding: 6,
+    paddingHorizontal: 10,
+    marginTop: 16,
+    borderRadius: 4,
+    backgroundColor: 'white',
+    width: 80,
+  },
+  buttonText: {alignSelf: 'center'},
+  label: {paddingLeft: 12},
 });

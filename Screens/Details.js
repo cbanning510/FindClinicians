@@ -1,4 +1,4 @@
-import React, {useEffect, useContext, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Image,
   StyleSheet,
@@ -10,23 +10,21 @@ import {
 } from 'react-native';
 
 import UserDetail from '../Components/UserDetail';
-//import {AuthContext} from '../components/context';
-//import {getState} from '../utils/getState';
 
 import {useSelector, useDispatch} from 'react-redux';
 import {setFavorite} from './favoriteSlice';
 
 const BASE_URL = 'https://open.mapquestapi.com/nominatim/v1/reverse.php?key=';
-const API_KEY = 'MkBymDR3RGCyXQ9sVyHnbaUFzLhMJAz2';
+const API_KEY = 'nyqrV5Sb6Ycc2d9H51kIt49mGQwCRs4w';
 
 const Details = ({route, navigation}) => {
   const [address, setAddress] = useState(null);
   const favorite = useSelector(state => state.favorite.favorite);
   const dispatch = useDispatch();
 
-  // useEffect(() => {
-  //   getAddress();
-  // }, []);
+  useEffect(() => {
+    getAddress();
+  }, []);
 
   const {
     item: {id, fullName, imageUrl, bio, email, phone, location},
@@ -39,8 +37,6 @@ const Details = ({route, navigation}) => {
   const getAddress = async () => {
     const latitude = location.split(',')[0].replace(/[^\d.-]/g, '');
     const longitude = location.split(',')[1].replace(/[^\d.-]/g, '');
-
-    //getState(parseFloat(latitude), parseFloat(longitude));
 
     try {
       const response = await fetch(
@@ -58,27 +54,20 @@ const Details = ({route, navigation}) => {
   };
 
   const createAddressText = () => {
+    console.log('address is ', address);
     const road = address?.road ? address.road : address?.hamlet;
     return `${road}\n${address?.county}\n${address?.state}\n${address?.postcode}\n${address?.country}`;
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={{paddingBottom: 60}}>
-        <View
-          style={{
-            flexDirection: 'row',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}>
+      <ScrollView contentContainerStyle={styles.ScrollViewContainer}>
+        <View style={styles.titleName}>
           <Text style={styles.titleText}>{fullName}</Text>
           <TouchableOpacity
             onPress={() => dispatch(setFavorite(!isFavorite ? id : null))}>
             <Image
-              style={{
-                width: 24,
-                height: 24,
-              }}
+              style={styles.favoriteImage}
               source={
                 !isFavorite
                   ? require('../assets/openHeart-100.png')
@@ -90,27 +79,20 @@ const Details = ({route, navigation}) => {
         </View>
         <View>
           <Image
-            style={{
-              width: 80,
-              height: 80,
-              marginBottom: 10,
-              borderRadius: 60,
-              alignSelf: 'center',
-            }}
+            style={styles.clinicianImage}
             source={{uri: `${updatedimageUrl}`}}
             resizeMode={'cover'}
-            k
           />
         </View>
         <View style={styles.userDetailsContainer}>
           <UserDetail title="name" text={`${fullName}`} />
-          <View style={{flexDirection: 'row', width: '80%', margin: 6}}>
+          <View style={styles.email}>
             <Text style={styles.title}>email: </Text>
             <Text>{email}</Text>
           </View>
           <UserDetail title="phone" text={`${phone}`} />
           <UserDetail title="address" text={createAddressText()} />
-          <View style={{flexDirection: 'row', width: '82%', margin: 6}}>
+          <View style={styles.bio}>
             <Text style={styles.title}>bio: </Text>
             <Text>{bio}</Text>
           </View>
@@ -142,17 +124,30 @@ const styles = StyleSheet.create({
     margin: 10,
     alignSelf: 'center',
   },
+  titleName: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  email: {flexDirection: 'row', width: '80%', margin: 6},
+  bio: {flexDirection: 'row', width: '82%', margin: 6},
   text: {
     fontSize: 16,
+  },
+  favoriteImage: {
+    width: 24,
+    height: 24,
   },
   titleText: {
     fontSize: 22,
     margin: 20,
   },
-  image: {
-    resizeMode: 'contain',
-    width: 160,
-    height: 160,
+  clinicianImage: {
+    width: 80,
+    height: 80,
+    marginBottom: 10,
+    borderRadius: 60,
+    alignSelf: 'center',
   },
   title: {
     fontWeight: '600',
@@ -177,6 +172,7 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
   },
+  ScrollViewContainer: {paddingBottom: 60},
 });
 
 export default Details;

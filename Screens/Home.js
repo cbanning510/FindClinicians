@@ -1,22 +1,20 @@
 import React, {useState, useEffect, useContext} from 'react';
 import {
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   Text,
   View,
   Button,
   FlatList,
-  ActivityIndicator,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 
-import GetLocation from 'react-native-get-location';
 import axios from 'axios';
 
 import ClinicianCard from '../Components/ClinicianCard';
 import UserDetail from '../Components/UserDetail';
-import {useSelector, useDispatch} from 'react-redux';
+import {useSelector} from 'react-redux';
 
 import clinicians from '../clinicians.json';
 const alphabetizedClinicians = clinicians.sort((a, b) =>
@@ -24,30 +22,25 @@ const alphabetizedClinicians = clinicians.sort((a, b) =>
 );
 
 const BASE_URL = 'https://www.mapquestapi.com/geocoding/v1/reverse?key=';
-const API_KEY = 'MkBymDR3RGCyXQ9sVyHnbaUFzLhMJAz2';
+const API_KEY = 'nyqrV5Sb6Ycc2d9H51kIt49mGQwCRs4w';
 
-//import {AuthContext} from '../components/context';
+import {AuthContext} from '../Components/context';
 
-const Home = ({navigation}) => {
-  const [deviceLocation, setDeviceLocation] = useState(null);
+const Home = () => {
   const [deviceState, setDeviceState] = useState(null);
-
-  //const {signOut, latitude, longitude} = useContext(AuthContext);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const {signOut} = useContext(AuthContext);
   const [stateClinicians, setStateClinicians] = useState(null);
   const favorite = useSelector(state => state.favorite.favorite);
   const location = useSelector(state => state.location.location);
-  //console.log('location in Home!!!!!!!!! ', location);
-  //const dispatch = useDispatch();
 
   function mapAsync(array, callbackfn) {
     return Promise.all(array.map(callbackfn));
   }
 
-  function filterAsync(array, callbackfn) {
-    return mapAsync(array, callbackfn).then(filterMap => {
-      return array.filter((value, index) => filterMap[index]);
-    });
+  async function filterAsync(array, callbackfn) {
+    const filterMap = await mapAsync(array, callbackfn);
+    return array.filter((value, index) => filterMap[index]);
   }
 
   useEffect(() => {
@@ -56,6 +49,7 @@ const Home = ({navigation}) => {
   }, [location]);
 
   const filterCliniciansByState = async () => {
+    setLoading(true);
     const newClinicians = await Promise.all(
       alphabetizedClinicians.map(item => {
         return getState(item);
@@ -66,8 +60,7 @@ const Home = ({navigation}) => {
       return newClinicians[i] === true;
     });
     setStateClinicians(finalClinicians);
-
-    console.log('filteredClinicians are ', finalClinicians);
+    setLoading(false);
   };
 
   const sendGetRequest = async () => {
@@ -89,7 +82,7 @@ const Home = ({navigation}) => {
       const resp = await axios.get(
         `${BASE_URL}${API_KEY}&location=${latitude},${longitude}`,
       );
-      return resp.data.results[0].locations[0].adminArea3 === 'NY';
+      return resp.data.results[0].locations[0].adminArea3 === 'MO';
     } catch (err) {
       console.error(err);
     }
@@ -134,19 +127,13 @@ const Home = ({navigation}) => {
     return <ClinicianCard item={item} />;
   };
 
-  console.log('stateClinicians ', stateClinicians);
-
-  return (
+  return loading ? (
+    <View style={styles.loading}>
+      <Text style={styles.loadingText}>Loading Clinicians...</Text>
+      <ActivityIndicator size="large" />
+    </View>
+  ) : (
     <SafeAreaView style={{flex: 1}}>
-      <Text>Device Location:</Text>
-      {location && (
-        <>
-          <Text>{`${location.latitude}, ${location.longitude}`}</Text>
-          <Text>State:</Text>
-          <Text>{deviceState}</Text>
-        </>
-      )}
-
       <View style={styles.container}>
         {!favorite && <Text style={styles.title}>Clinicians</Text>}
         {favorite && renderFavorite()}
@@ -171,6 +158,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
+  },
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginBottom: 20,
   },
   favoriteContainer: {
     padding: 8,
